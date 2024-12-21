@@ -12,7 +12,7 @@ import jax.nn as jnn
 import jax.numpy as jnp
 import numpy as np
 
-import constants
+from chessformer import constants
 
 
 class PositionalEncodings(enum.Enum):

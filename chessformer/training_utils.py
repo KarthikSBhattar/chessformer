@@ -13,7 +13,7 @@ from jax import numpy as jnp
 import optax
 import orbax.checkpoint as ocp
 
-import constants
+from chessformer import constants
 
 
 def replicate(

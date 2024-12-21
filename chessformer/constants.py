@@ -11,7 +11,7 @@ from apache_beam import coders
 import haiku as hk
 import jaxtyping as jtp
 
-import config as config_lib
+from chessformer import config as config_lib
 
 
 # Integer sequences of token ids.

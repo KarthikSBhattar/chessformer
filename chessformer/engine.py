@@ -1,4 +1,4 @@
-from engines import constants
+from chessformer.engines import constants
 
 engine = constants._build_neural_engine(model_name="9M")
 

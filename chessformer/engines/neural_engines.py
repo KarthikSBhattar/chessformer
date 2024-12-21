@@ -14,7 +14,7 @@ import scipy.special
 from chessformer import tokenizer
 from chessformer import utils
 from chessformer import constants
-import engine
+from chessformer.engines import engine
 
 # Input = tokenized FEN, Output = log-probs, depends on the agent.
 PredictFn = Callable[[np.ndarray], np.ndarray]
