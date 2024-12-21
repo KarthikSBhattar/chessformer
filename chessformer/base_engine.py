@@ -20,7 +20,7 @@ from typing import Any, Protocol
 
 import chess
 
-from chessformer import utils
+import chessformer.utils as utils
 
 AnalysisResult = Mapping[str, Any]
 

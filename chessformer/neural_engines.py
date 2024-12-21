@@ -11,16 +11,16 @@ import jax.nn as jnn
 import numpy as np
 import scipy.special
 
-from chessformer import tokenizer
-from chessformer import utils
-from chessformer import constants
-from chessformer.engines import engine
+import chessformer.tokenizer as tokenizer
+import chessformer.utils as utils
+import chessformer.constants as constants
+import chessformer.base_engine as base_engine
 
 # Input = tokenized FEN, Output = log-probs, depends on the agent.
 PredictFn = Callable[[np.ndarray], np.ndarray]
 
 
-class NeuralEngine(engine.Engine):
+class NeuralEngine(base_engine.Engine):
   """Base class for neural engines.
 
   Attributes:
@@ -45,7 +45,7 @@ def _update_scores_with_repetitions(
     scores: np.ndarray,
 ) -> None:
   """Updates the win-probabilities for a board given possible repetitions."""
-  sorted_legal_moves = engine.get_ordered_legal_moves(board)
+  sorted_legal_moves = base_engine.get_ordered_legal_moves(board)
   for i, move in enumerate(sorted_legal_moves):
     board.push(move)
     # If the move results in a draw, associate 50% win prob to it.
@@ -57,10 +57,10 @@ def _update_scores_with_repetitions(
 class ActionValueEngine(NeuralEngine):
   """Neural engine using a function P(r | s, a)."""
 
-  def analyse(self, board: chess.Board) -> engine.AnalysisResult:
+  def analyse(self, board: chess.Board) -> base_engine.AnalysisResult:
     """Returns buckets log-probs for each action, and FEN."""
     # Tokenize the legal actions.
-    sorted_legal_moves = engine.get_ordered_legal_moves(board)
+    sorted_legal_moves = base_engine.get_ordered_legal_moves(board)
     legal_actions = [utils.MOVE_TO_ACTION[x.uci()] for x in sorted_legal_moves]
     legal_actions = np.array(legal_actions, dtype=np.int32)
     legal_actions = np.expand_dims(legal_actions, axis=-1)
@@ -81,7 +81,7 @@ class ActionValueEngine(NeuralEngine):
     return_buckets_probs = np.exp(return_buckets_log_probs)
     win_probs = np.inner(return_buckets_probs, self._return_buckets_values)
     _update_scores_with_repetitions(board, win_probs)
-    sorted_legal_moves = engine.get_ordered_legal_moves(board)
+    sorted_legal_moves = base_engine.get_ordered_legal_moves(board)
     if self.temperature is not None:
       probs = scipy.special.softmax(win_probs / self.temperature, axis=-1)
       return self._rng.choice(sorted_legal_moves, p=probs)
@@ -104,7 +104,7 @@ class StateValueEngine(NeuralEngine):
     sequences = np.concatenate([tokenized_fens, dummy_return_buckets], axis=1)
     return predict_fn(sequences)[:, -1]
 
-  def analyse(self, board: chess.Board) -> engine.AnalysisResult:
+  def analyse(self, board: chess.Board) -> base_engine.AnalysisResult:
     """Defines a policy that predicts action and action value."""
     current_value_log_probs = self._get_value_log_probs(
         self.predict_fn, [board.fen()]
@@ -112,7 +112,7 @@ class StateValueEngine(NeuralEngine):
 
     # We perform a search of depth 1 to get the Q-values.
     next_fens = []
-    for move in engine.get_ordered_legal_moves(board):
+    for move in base_engine.get_ordered_legal_moves(board):
       board.push(move)
       next_fens.append(board.fen())
       board.pop()
@@ -133,7 +133,7 @@ class StateValueEngine(NeuralEngine):
     next_probs = np.exp(next_log_probs)
     win_probs = np.inner(next_probs, self._return_buckets_values)
     _update_scores_with_repetitions(board, win_probs)
-    sorted_legal_moves = engine.get_ordered_legal_moves(board)
+    sorted_legal_moves = base_engine.get_ordered_legal_moves(board)
     if self.temperature is not None:
       probs = scipy.special.softmax(win_probs / self.temperature, axis=-1)
       return self._rng.choice(sorted_legal_moves, p=probs)
@@ -145,7 +145,7 @@ class StateValueEngine(NeuralEngine):
 class BCEngine(NeuralEngine):
   """Defines a policy that predicts action probs."""
 
-  def analyse(self, board: chess.Board) -> engine.AnalysisResult:
+  def analyse(self, board: chess.Board) -> base_engine.AnalysisResult:
     """Defines a policy that predicts action probs."""
     tokenized_fen = tokenizer.tokenize(board.fen()).astype(np.int32)
     tokenized_fen = np.expand_dims(tokenized_fen, axis=0)
@@ -155,7 +155,7 @@ class BCEngine(NeuralEngine):
     assert len(total_action_log_probs) == utils.NUM_ACTIONS
 
     # We must renormalize the output distribution to only the legal moves.
-    sorted_legal_moves = engine.get_ordered_legal_moves(board)
+    sorted_legal_moves = base_engine.get_ordered_legal_moves(board)
     legal_actions = [utils.MOVE_TO_ACTION[x.uci()] for x in sorted_legal_moves]
     legal_actions = np.array(legal_actions, dtype=np.int32)
     action_log_probs = total_action_log_probs[legal_actions]
@@ -165,7 +165,7 @@ class BCEngine(NeuralEngine):
 
   def play(self, board: chess.Board) -> chess.Move:
     action_log_probs = self.analyse(board)['log_probs']
-    sorted_legal_moves = engine.get_ordered_legal_moves(board)
+    sorted_legal_moves = base_engine.get_ordered_legal_moves(board)
     if self.temperature is not None:
       probs = scipy.special.softmax(
           action_log_probs / self.temperature, axis=-1

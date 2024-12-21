@@ -1,0 +1,21 @@
+Metadata-Version: 2.1
+Name: chessformer
+Version: 0.1.0
+Summary: The Chessformer Engine
+Home-page: https://github.com/KarthikSBhattar/chessformer
+Author: Karthik
+Requires-Dist: absl-py
+Requires-Dist: apache-beam
+Requires-Dist: chess
+Requires-Dist: chex
+Requires-Dist: dm-haiku
+Requires-Dist: jax
+Requires-Dist: jaxtyping
+Requires-Dist: jupyter
+Requires-Dist: numpy
+Requires-Dist: optax
+Requires-Dist: orbax-checkpoint
+Requires-Dist: pandas
+Requires-Dist: scipy
+Requires-Dist: typing-extensions
+Requires-Dist: uvicorn

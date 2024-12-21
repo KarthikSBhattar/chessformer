@@ -1,6 +1,6 @@
-from engines import constants
+import chessformer.engine_constants as engine_constants
 
-engine = constants._build_neural_engine(model_name="9M")
+engine = engine_constants._build_neural_engine(model_name="9M")
 
 def play(board):
     try:

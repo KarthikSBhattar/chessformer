@@ -11,11 +11,11 @@ import chess.pgn
 from jax import random as jrandom
 import numpy as np
 
-from chessformer import tokenizer
-from chessformer import training_utils
-from chessformer import transformer
-from chessformer import utils
-from chessformer.engines import neural_engines
+import chessformer.tokenizer as tokenizer
+import chessformer.training_utils as training_utils
+import chessformer.transformer as transformer
+import chessformer.utils as utils
+import chessformer.neural_engines as neural_engines
 
 
 def _build_neural_engine(
