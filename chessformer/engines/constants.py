@@ -15,7 +15,7 @@ from chessformer import tokenizer
 from chessformer import training_utils
 from chessformer import transformer
 from chessformer import utils
-from chessformer.engines import neural_engines
+import neural_engines
 
 
 def _build_neural_engine(
